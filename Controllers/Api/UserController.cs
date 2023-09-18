@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NoteKeeper.Models;
+using System.Collections;
 
 namespace NoteKeeper.Controllers.Api
 {
@@ -6,9 +8,6 @@ namespace NoteKeeper.Controllers.Api
     [ApiController]
     public class UserController : ControllerBase
     {
-        public IActionResult Index()
-        {
-            return Content("api started successfully");
-        }
+        
     }
 }
