@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using NoteKeeper.Dtos;
 using NoteKeeper.Models;
 using System.Collections;
 
@@ -15,16 +17,19 @@ namespace NoteKeeper.Controllers.Api
     public class UserController : ControllerBase
     {
         private MyDBContext _context;
-        public UserController()
+       // private readonly IMapper _mapper;
+        public UserController(MyDBContext my_context)
         {
-            _context = new MyDBContext();
+            //_context = new MyDBContext();
             //_mapper = mapper;
+            _context = my_context;
         }
 
         [HttpGet]
         public IEnumerable<User> GetUser()
         {
             var user = _context.Users.ToList();
+            //var userDto = user.Select(user => _mapper.Map<UserDto>(user));
             return user;
         }
 

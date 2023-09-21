@@ -1,10 +1,11 @@
 ﻿
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
+
 namespace NoteKeeper.Models
 {
     public class MyDBContext : DbContext
     {
-        public MyDBContext()
+        public MyDBContext(DbContextOptions options):base(options)
         {
 
         }

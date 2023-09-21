@@ -1,9 +1,13 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using NoteKeeper.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<MyDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 var app = builder.Build();

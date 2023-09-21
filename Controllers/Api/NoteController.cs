@@ -14,9 +14,9 @@ namespace NoteKeeper.Controllers.Api
         private MyDBContext _context;
         private readonly IMapper _mapper;
 
-        public NoteController( IMapper mapper)   
-        {
-            _context = new MyDBContext();
+        public NoteController( IMapper mapper , MyDBContext my_context)   
+        { 
+            _context = my_context;
             _mapper = mapper;
         }
 
