@@ -70,7 +70,7 @@ namespace NoteKeeper.Controllers.Api
             return response;
         }
 
-        [AllowAnonymous]
+        
         [HttpGet]
         public IEnumerable<User> GetUser()
         {
@@ -79,7 +79,7 @@ namespace NoteKeeper.Controllers.Api
             return user;
         }
 
-        [AllowAnonymous]
+        
         [HttpGet("{id}")]
         public User GetUserById(int id)
         {
@@ -93,7 +93,10 @@ namespace NoteKeeper.Controllers.Api
 
         }
 
-        [AllowAnonymous]
+
+        // TODO : Add Authorize for this method 
+        // In the Header use Authorization key and Bearer Value + "token" generated value during login method
+        //[Authorize]
         [HttpPost]
         public User CreateUser(User user)
         {
