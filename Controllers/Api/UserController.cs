@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using NoteKeeper.Dtos;
@@ -7,6 +8,7 @@ using NoteKeeper.Models;
 using System.Collections;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using BC = BCrypt.Net.BCrypt;
 
 namespace NoteKeeper.Controllers.Api
 {
@@ -61,7 +63,18 @@ namespace NoteKeeper.Controllers.Api
             
             IActionResult response = Unauthorized();
             var user_ = AuthenticateUser(user);
-            if (user_ != null)
+            var userInDb = _context.Users.SingleOrDefault(u=>u.Email == user.Email);
+            if (userInDb == null)
+            {
+                return BadRequest("No Account Exist");
+            }
+            bool verify_password = BC.Verify(user.Password, userInDb.Password);
+            if(!verify_password)
+            {
+                return BadRequest("Wrong Password");
+            }
+
+            if (user_ != null  && verify_password)
             {
                 var token = GenerateToken(user_);
                 response = Ok(new { token = token });
@@ -98,12 +111,16 @@ namespace NoteKeeper.Controllers.Api
         // In the Header use Authorization key and Bearer Value + "token" generated value during login method
         //[Authorize]
         [HttpPost]
-        public User CreateUser(User user)
+        public IActionResult CreateUser(User user)
         {
             var users = _context.Users.ToList();
-
-            //Todo : Check Unique Email COndition 
+            var email = users.SingleOrDefault(u => u.Email == user.Email);
+            if (email!=null) {
+                return BadRequest("Email is Already Registered. Try with different email");
+            }
             //Todo : AddPassword Hashing
+
+            string passwordHash = BC.HashPassword(user.Password);
 
             _context.Users.Add(user);
             try
@@ -114,7 +131,8 @@ namespace NoteKeeper.Controllers.Api
             {
                 Console.WriteLine(ex.Message);
             }
-            return user;
+           // return user;
+           return Ok("User Created Succesfully : " + user.Id + ": "+user.Name + ": " +user.Email+": " );
         }
 
         [HttpPut("{id}")]
