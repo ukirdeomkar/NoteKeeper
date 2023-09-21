@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NoteKeeper.Dtos;
 using NoteKeeper.Models;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace NoteKeeper.Controllers.Api
 {
