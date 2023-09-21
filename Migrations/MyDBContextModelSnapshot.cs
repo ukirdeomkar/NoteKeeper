@@ -48,7 +48,7 @@ namespace NoteKeeper.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notes");
+                    b.ToTable("Notes", (string)null);
                 });
 
             modelBuilder.Entity("NoteKeeper.Models.User", b =>
@@ -73,7 +73,7 @@ namespace NoteKeeper.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("NoteKeeper.Models.Note", b =>

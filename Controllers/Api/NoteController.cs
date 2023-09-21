@@ -30,17 +30,30 @@ namespace NoteKeeper.Controllers.Api
         }
 
 
-        [HttpGet("{id}")]
-        public Note GetNoteById(int id)
+        [HttpGet("id/{id}")]
+        public IEnumerable<NoteDto> GetNoteById(int id)
         {
-            var note = _context.Notes.ToList().Single(u => u.Id == id);
-
+            var note = _context.Notes.ToList().Where(u=>u.Id==id);
+            var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
 
             if (note == null)
             {
                 Console.WriteLine("Not Found");
             }
-            return note;
+            return noteDto;
+
+        }
+        [HttpGet("user/{userid}")]
+        public IEnumerable<NoteDto> GetNoteByUserId(int userid)
+        {
+            var note = _context.Notes.ToList().Where(u => u.UserId == userid);
+            var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
+
+            if (note == null)
+            {
+                Console.WriteLine("Not Found");
+            }
+            return noteDto;
 
         }
 
@@ -53,7 +66,8 @@ namespace NoteKeeper.Controllers.Api
             //Todo : AddPassword Hashing
             var DateAdded = DateTime.Now;
             note.DateAdded = DateAdded;
-
+            var user = _context.Users.SingleOrDefault(u => u.Id==note.UserId);
+            note.User = user;
             _context.Notes.Add(note);
             //try
             //{
@@ -67,7 +81,7 @@ namespace NoteKeeper.Controllers.Api
         }
 
         [HttpPut("{id}")]
-        public void UpdateNotes(int id, Note note)
+        public NoteDto UpdateNotes(int id, Note note)
         {
             // TODO : Use Hashing for Password and findout how to update Hashed Password ;
             // TODO : ADD extra field in user if required that can be updated
@@ -76,20 +90,30 @@ namespace NoteKeeper.Controllers.Api
             {
                 Console.WriteLine("Empty Note");
             }
-            else
-            {
+
                 //userinDB.Password = user.Password;
+
+            if(note.UserId != noteinDB.UserId)
+            {
+                Console.WriteLine("Unauthorized Action");
+            }
                 noteinDB.Title = note.Title;
                 noteinDB.Description = note.Description;
-                try
-                {
+
+                //try
+                //{
                     _context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
+                var noteUpdated = _context.Notes.Single(u => u.Id == id);
+                var noteDto =  _mapper.Map<NoteDto>(noteUpdated);
+                return noteDto;
+
+                //}
+                //catch (Exception ex)
+                //{
+                //    Console.WriteLine(ex.Message);
+                //}
+            
+            
         }
 
 
