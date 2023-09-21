@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using NoteKeeper.Dtos;
 using NoteKeeper.Models;
+using System.Data.Entity;
 
 namespace NoteKeeper.Controllers.Api
 {
@@ -7,55 +10,61 @@ namespace NoteKeeper.Controllers.Api
     [Route("/notekeeper/[controller]")]
     public class NoteController : ControllerBase
     {
-        
-            private MyDBContext _context;
-            public NoteController()
+
+        private MyDBContext _context;
+        private readonly IMapper _mapper;
+
+        public NoteController( IMapper mapper)   
+        {
+            _context = new MyDBContext();
+            _mapper = mapper;
+        }
+
+
+        [HttpGet]
+        public IEnumerable<NoteDto> GetNote()
+        {
+            var notes = _context.Notes.Include(n=>n.User).ToList();
+            var noteDto = notes.Select(notes => _mapper.Map<NoteDto>(notes));
+            return noteDto;
+        }
+
+
+        [HttpGet("{id}")]
+        public Note GetNoteById(int id)
+        {
+            var note = _context.Notes.ToList().Single(u => u.Id == id);
+
+
+            if (note == null)
             {
-                _context = new MyDBContext();
-                //_mapper = mapper;
+                Console.WriteLine("Not Found");
             }
+            return note;
 
+        }
 
-            [HttpGet]
-            public IEnumerable<Note> GetNote()
-            {
-                var notes = _context.Notes.ToList();
-                return notes;
-            }
+        [HttpPost]
+        public Note CreateNote(Note note)
+        {
+            //var note = _context.Notes.ToList();
 
-            [HttpGet("{id}")]
-            public Note GetNoteById(int id)
-            {
-                var note = _context.Notes.ToList().Single(u => u.Id == id);
+            //Todo : Check Unique Email COndition 
+            //Todo : AddPassword Hashing
+            var DateAdded = DateTime.Now;
+            note.DateAdded = DateAdded;
 
-
-                if (note == null)
-                {
-                    Console.WriteLine("Not Found");
-                }
-                return note;
-
-            }
-
-            [HttpPost]
-            public Note CreateNote(Note note)
-            {
-                //var note = _context.Notes.ToList();
-
-                //Todo : Check Unique Email COndition 
-                //Todo : AddPassword Hashing
-
-                _context.Notes.Add(note);
-                try
-                {
-                    _context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                return note;
-            }
+            _context.Notes.Add(note);
+            //try
+            //{
+            _context.SaveChanges();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
+            return note;
+        }
 
         [HttpPut("{id}")]
         public void UpdateNotes(int id, Note note)
