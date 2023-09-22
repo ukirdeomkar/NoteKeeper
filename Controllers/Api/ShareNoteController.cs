@@ -86,7 +86,7 @@ namespace NoteKeeper.Controllers.Api
             {
                 return NotFound();
             }
-            if (note.Permission == Note.notShared || note.Permission != Note.editNote)
+            if (note.Permission == Note.notShared || note.Permission < Note.editNote )
             {
                 return BadRequest("Unauthorised Access : Cannot Edit this Note");
             }
@@ -108,7 +108,7 @@ namespace NoteKeeper.Controllers.Api
             {
                 return NotFound();
             }
-            if(note.Permission==Note.notShared || note.Permission != Note.deleteNote)
+            if(note.Permission < Note.deleteNote)
             {
                 return BadRequest("Unauthorised Action : Dont Have Permission to delete");
             }

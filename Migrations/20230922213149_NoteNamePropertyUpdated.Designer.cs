@@ -12,8 +12,8 @@ using NoteKeeper.Models;
 namespace NoteKeeper.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20230922172608_AddData")]
-    partial class AddData
+    [Migration("20230922213149_NoteNamePropertyUpdated")]
+    partial class NoteNamePropertyUpdated
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,6 +38,9 @@ namespace NoteKeeper.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Permission")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -69,7 +72,6 @@ namespace NoteKeeper.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")

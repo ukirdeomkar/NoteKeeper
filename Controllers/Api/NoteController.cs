@@ -30,31 +30,43 @@ namespace NoteKeeper.Controllers.Api
             return noteDto;
         }
 
-
+        [Authorize]
         [HttpGet("id/{id}")]
-        public IEnumerable<NoteDto> GetNoteById(int id)
+        public IActionResult GetNoteById(int id)
         {
-            var note = _context.Notes.ToList().Where(u=>u.Id==id);
-            var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
-
+            
+            var note = _context.Notes.ToList().SingleOrDefault(u=>u.Id==id);
             if (note == null)
             {
                 Console.WriteLine("Not Found");
             }
-            return noteDto;
+            var userIdwithAcess = User.FindFirst("id")?.Value;
+            var userid = note.UserId;
+            if (userIdwithAcess != userid.ToString())
+            {
+                return BadRequest("Unauthorised Access");
+            }
+            var noteDto = _mapper.Map<NoteDto>(note);
+            return Ok(noteDto);
 
         }
         [HttpGet("user/{userid}")]
-        public IEnumerable<NoteDto> GetNoteByUserId(int userid)
-        {
-            var note = _context.Notes.ToList().Where(u => u.UserId == userid);
-            var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
 
+        [Authorize]
+        public IActionResult GetNoteByUserId(int userid)
+        {
+            var userIdwithAcess = User.FindFirst("id")?.Value;
+            if(userIdwithAcess != userid.ToString())
+            {
+                return BadRequest("Unauthorised Access");
+            }
+            var note = _context.Notes.ToList().Where(u => u.UserId == userid);
             if (note == null)
             {
                 Console.WriteLine("Not Found");
             }
-            return noteDto;
+            var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
+            return Ok(noteDto);
 
         }
 
@@ -146,7 +158,7 @@ namespace NoteKeeper.Controllers.Api
             var userPerformingDelete = _context.Users.Single(u => u.Id == note.UserId);
             var userWithAccess = User.FindFirst("id")?.Value;
             
-            if (userPerformingDelete.Id.ToString() != userWithAccess)
+            if (userPerformingDelete.Id.ToString() == userWithAccess)
             {
                 return BadRequest("Unauthorised Action");
             }

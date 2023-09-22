@@ -168,27 +168,29 @@ namespace NoteKeeper.Controllers.Api
         }
 
         [HttpPut("{id}")]
-        public void UpdateUserPassword(int id, User user)
+        public IActionResult UpdateUserPassword(int id, User user)
         {
             // TODO : Use Hashing for Password and findout how to update Hashed Password ;
             // TODO : ADD extra field in user if required that can be updated
-            var userinDB = _context.Users.Single(u => u.Id == id);
-            if (user == null)
-            {
-                Console.WriteLine("Not Found User");
-            }
-            else
-            {
-                userinDB.Password = user.Password;
-                try
-                {
-                    _context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
+            //var userinDB = _context.Users.Single(u => u.Id == id);
+            //if (user == null)
+            //{
+            //    Console.WriteLine("Not Found User");
+            //}
+            //else
+            //{
+            //    userinDB.Password = user.Password;
+            //    try
+            //    {
+            //        _context.SaveChanges();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(ex.Message);
+            //    }
+            //}
+            return Ok("This feature will be available soon");
+
         }
 
 
