@@ -67,6 +67,7 @@ namespace NoteKeeper.Controllers.Api
             //Todo : AddPassword Hashing
             var DateAdded = DateTime.Now;
             note.DateAdded = DateAdded;
+            note.UniqueId = Guid.NewGuid();
             var user = _context.Users.SingleOrDefault(u => u.Id==note.UserId);
             note.User = user;
             _context.Notes.Add(note);

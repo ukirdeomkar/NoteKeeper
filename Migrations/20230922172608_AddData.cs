@@ -4,7 +4,7 @@
 
 namespace NoteKeeper.Migrations
 {
-    public partial class SampleDBUpdated : Migration
+    public partial class AddData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,13 +16,10 @@ namespace NoteKeeper.Migrations
                 SET IDENTITY_INSERT [dbo].[Users] OFF
             ");
             migrationBuilder.Sql(@"
-SET IDENTITY_INSERT [dbo].[Notes] ON
-INSERT INTO [dbo].[Notes] ([Id], [Title], [Description], [DateAdded], [UserId]) VALUES (1, N'Title 1', N'This is 1 description', N'2023-09-22 20:42:12', 1)
-INSERT INTO [dbo].[Notes] ([Id], [Title], [Description], [DateAdded], [UserId]) VALUES (2, N'Title 2', N'This is 2 description', N'2023-09-22 20:42:22', 1)
-INSERT INTO [dbo].[Notes] ([Id], [Title], [Description], [DateAdded], [UserId]) VALUES (3, N'Title 3', N'This is 3 description', N'2023-09-22 20:42:31', 1)
-INSERT INTO [dbo].[Notes] ([Id], [Title], [Description], [DateAdded], [UserId]) VALUES (4, N'Title 3', N'This is 3 description', N'2023-09-22 20:42:35', 2)
-SET IDENTITY_INSERT [dbo].[Notes] OFF
-
+                INSERT INTO [dbo].[Notes] ( [Title], [Description], [DateAdded], [UserId]) VALUES ( N'Title 1', N'This is 1 description', N'2023-09-22 20:42:12', 1)
+                INSERT INTO [dbo].[Notes] ( [Title], [Description], [DateAdded], [UserId]) VALUES ( N'Title 2', N'This is 2 description', N'2023-09-22 20:42:22', 1)
+                INSERT INTO [dbo].[Notes] ( [Title], [Description], [DateAdded], [UserId]) VALUES ( N'Title 3', N'This is 3 description', N'2023-09-22 20:42:31', 1)
+                INSERT INTO [dbo].[Notes] ( [Title], [Description], [DateAdded], [UserId]) VALUES ( N'Title 3', N'This is 3 description', N'2023-09-22 20:42:35', 2)
             ");
 
         }

@@ -12,8 +12,8 @@ using NoteKeeper.Models;
 namespace NoteKeeper.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20230922151510_SampleDBUpdated")]
-    partial class SampleDBUpdated
+    [Migration("20230922172608_AddData")]
+    partial class AddData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -42,6 +42,9 @@ namespace NoteKeeper.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UniqueId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
