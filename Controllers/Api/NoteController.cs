@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NoteKeeper.Dtos;
 using NoteKeeper.Models;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace NoteKeeper.Controllers.Api
 {
@@ -83,22 +83,31 @@ namespace NoteKeeper.Controllers.Api
         }
 
         [HttpPut("{id}")]
-        public NoteDto UpdateNotes(int id, Note note)
+        public IActionResult UpdateNotes(int id, Note note)
         {
-            // TODO : Use Hashing for Password and findout how to update Hashed Password ;
-            // TODO : ADD extra field in user if required that can be updated
+           
             var noteinDB = _context.Notes.Single(u => u.Id == id);
             if (note == null)
             {
                 Console.WriteLine("Empty Note");
             }
+            
 
-                //userinDB.Password = user.Password;
-
-            if(note.UserId != noteinDB.UserId)
+            var userPerformingDelete = _context.Users.SingleOrDefault(u => u.Id == noteinDB.UserId);
+            if (userPerformingDelete == null)
             {
-                Console.WriteLine("Unauthorized Action");
+                return BadRequest("Note or User Not Found");
             }
+
+            var userWithAccess = User.FindFirst("id")?.Value;
+
+            if (userPerformingDelete.Id.ToString() != userWithAccess)
+            {
+                return BadRequest("Unauthorised Action");
+            }
+
+
+           
                 noteinDB.Title = note.Title;
                 noteinDB.Description = note.Description;
 
@@ -107,7 +116,7 @@ namespace NoteKeeper.Controllers.Api
                     _context.SaveChanges();
                 var noteUpdated = _context.Notes.Single(u => u.Id == id);
                 var noteDto =  _mapper.Map<NoteDto>(noteUpdated);
-                return noteDto;
+                return Ok(noteDto);
 
                 //}
                 //catch (Exception ex)
@@ -118,6 +127,33 @@ namespace NoteKeeper.Controllers.Api
             
         }
 
+        [Authorize]
+        [HttpDelete("{id}")]
+        public IActionResult DeleteNote(int id)
+        {
+            var note = _context.Notes.SingleOrDefault(c => c.Id == id);
+            if (note == null)
+            {
+                return BadRequest("Note Not Found");
+            }
+
+            var userPerformingDelete = _context.Users.Single(u => u.Id == note.UserId);
+            var userWithAccess = User.FindFirst("id")?.Value;
+            
+            if (userPerformingDelete.Id.ToString() != userWithAccess)
+            {
+                return BadRequest("Unauthorised Action");
+            }
+
+            // TODO : Check User Token while deleting from localStorage or someother way to confirm user identity
+
+
+
+            _context.Notes.Remove(note);
+            _context.SaveChanges();
+
+            return Ok(new {Success = "note deleted succesfuly"});
+        }
 
     }
 }
