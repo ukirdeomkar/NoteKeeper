@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public int NoteId { get; set; }
         public string UniqueLink { get; set; }
-        public string Permission { get; set; } // "view", "edit", "delete"
+        public int Permission { get; set; } // "view", "edit", "delete"
 
         public Note? Note { get; set; }
 
