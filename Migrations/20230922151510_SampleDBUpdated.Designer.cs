@@ -12,8 +12,8 @@ using NoteKeeper.Models;
 namespace NoteKeeper.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20230921094016_PopulateSampleUsers")]
-    partial class PopulateSampleUsers
+    [Migration("20230922151510_SampleDBUpdated")]
+    partial class SampleDBUpdated
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -82,7 +82,7 @@ namespace NoteKeeper.Controllers.Api
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"],
-                claims, expires: DateTime.Now.AddMinutes(1),
+                claims, expires: DateTime.Now.AddHours(8),
                 signingCredentials: credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
