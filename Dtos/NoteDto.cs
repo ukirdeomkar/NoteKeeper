@@ -13,7 +13,13 @@ namespace NoteKeeper.Dtos
         public string Description { get; set; }
         
         public DateTime DateAdded { get; set; }
+        public Guid UniqueId { get; set; }
         public int UserId { get; set; }
-        public UserDto User { get; set; }
+        public int? Permission { get; set; }
+
+
+
+
+
     }
 }

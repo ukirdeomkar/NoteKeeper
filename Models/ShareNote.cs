@@ -2,12 +2,9 @@
 {
     public class ShareNote
     {
-        public int Id { get; set; }
-        public int NoteId { get; set; }
-        public string UniqueLink { get; set; }
-        public int Permission { get; set; } // "view", "edit", "delete"
+        public Guid? UniqueLink { get; set; }
+        public int SharedPermission { get; set; } // "view", "edit", "delete"
 
-        public Note? Note { get; set; }
 
         public static readonly int notShared = 0;
         public static readonly int viewNote = 1;

@@ -58,18 +58,23 @@ namespace NoteKeeper.Controllers.Api
 
         }
 
+        [Authorize]
         [HttpPost]
-        public Note CreateNote(Note note)
+        public IActionResult CreateNote(Note note)
         {
             //var note = _context.Notes.ToList();
+            
+            var userId = User.FindFirst("id")?.Value;
+            var user = _context.Users.SingleOrDefault(u => u.Id.ToString() == userId);
 
-            //Todo : Check Unique Email COndition 
-            //Todo : AddPassword Hashing
+
             var DateAdded = DateTime.Now;
             note.DateAdded = DateAdded;
             note.UniqueId = Guid.NewGuid();
-            var user = _context.Users.SingleOrDefault(u => u.Id==note.UserId);
+            
+
             note.User = user;
+            
             _context.Notes.Add(note);
             //try
             //{
@@ -79,17 +84,18 @@ namespace NoteKeeper.Controllers.Api
             //{
             //    Console.WriteLine(ex.Message);
             //}
-            return note;
+            var noteDto = _mapper.Map<NoteDto>(note);
+            return Ok(noteDto);
         }
 
         [HttpPut("{id}")]
         public IActionResult UpdateNotes(int id, Note note)
         {
            
-            var noteinDB = _context.Notes.Single(u => u.Id == id);
+            var noteinDB = _context.Notes.SingleOrDefault(u => u.Id == id);
             if (note == null)
             {
-                Console.WriteLine("Empty Note");
+                return BadRequest("Empty Note");
             }
             
 

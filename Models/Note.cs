@@ -18,5 +18,13 @@ namespace NoteKeeper.Models
         [ForeignKey("UserId")]
         public int UserId{ get; set; }
         public User? User { get; set; }
+
+        public int Permission { get; set; } = 0;// "view", "edit", "delete"
+
+
+        public static readonly int notShared = 0;
+        public static readonly int viewNote = 1;
+        public static readonly int editNote = 2;
+        public static readonly int deleteNote = 3;
     }
 }
