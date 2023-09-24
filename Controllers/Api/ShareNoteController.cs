@@ -59,7 +59,7 @@ namespace NoteKeeper.Controllers.Api
             var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
 
             // Return the unique link to the user
-            return Ok(new { link = $"{_configuration["Host:link"]}/notekeeper/sharenote/{shareNote.UniqueLink}" });
+            return Ok(new { link = $"{_configuration["Host:link"]}/notekeeper/sharenote/{shareNote.UniqueLink}" , permission = note.Permission});
         }
 
         [AllowAnonymous]
@@ -74,7 +74,8 @@ namespace NoteKeeper.Controllers.Api
             {
                 return BadRequest("Unauthorised Access : Cannot view this note");
             }
-            return Ok(note);
+            var noteDto = _mapper.Map<NoteDto>(note);
+            return Ok(noteDto);
         }
 
         [AllowAnonymous]
