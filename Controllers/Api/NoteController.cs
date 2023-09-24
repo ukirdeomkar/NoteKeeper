@@ -160,7 +160,7 @@ namespace NoteKeeper.Controllers.Api
             var userPerformingDelete = _context.Users.Single(u => u.Id == note.UserId);
             var userWithAccess = User.FindFirst("id")?.Value;
             
-            if (userPerformingDelete.Id.ToString() == userWithAccess)
+            if (userPerformingDelete.Id.ToString() != userWithAccess)
             {
                 return BadRequest("Unauthorised Action");
             }
