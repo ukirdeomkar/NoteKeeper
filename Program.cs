@@ -32,6 +32,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MyDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost3000",
+                builder => builder
+                    .WithOrigins("http://localhost:3000") 
+                    .AllowAnyMethod()                     
+                    .AllowAnyHeader());                   
+});
 
 var app = builder.Build();
 
@@ -43,6 +51,7 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseCors("AllowLocalhost3000");
 
 app.UseAuthentication();
 app.UseAuthorization();

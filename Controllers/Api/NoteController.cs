@@ -4,11 +4,13 @@ using NoteKeeper.Dtos;
 using NoteKeeper.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 
 namespace NoteKeeper.Controllers.Api
 {
     [ApiController]
     [Route("/notekeeper/[controller]")]
+    [EnableCors("AllowLocalhost3000")]
     public class NoteController : ControllerBase
     {
 
@@ -50,17 +52,17 @@ namespace NoteKeeper.Controllers.Api
             return Ok(noteDto);
 
         }
-        [HttpGet("user/{userid}")]
+        [HttpGet("user/notes")]
 
         [Authorize]
-        public IActionResult GetNoteByUserId(int userid)
+        public IActionResult GetNoteByUserId()
         {
-            var userIdwithAcess = User.FindFirst("id")?.Value;
-            if(userIdwithAcess != userid.ToString())
-            {
-                return BadRequest("Unauthorised Access");
-            }
-            var note = _context.Notes.ToList().Where(u => u.UserId == userid);
+            var userid = User.FindFirst("id")?.Value;
+            //if(userIdwithAcess != userid.ToString())
+            //{
+            //    return BadRequest("Unauthorised Access");
+            //}
+            var note = _context.Notes.ToList().Where(u => u.UserId.ToString() == userid);
             if (note == null)
             {
                 Console.WriteLine("Not Found");

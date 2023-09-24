@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,7 @@ namespace NoteKeeper.Controllers.Api
 
     [Route("notekeeper/[controller]")]
     [ApiController]
+    [EnableCors("AllowLocalhost3000")]
     public class UserController : ControllerBase
     {
         private MyDBContext _context;
@@ -90,11 +92,10 @@ namespace NoteKeeper.Controllers.Api
 
 
         [AllowAnonymous]
-        [HttpPost("token")]
+        [HttpPost("login")]
         public IActionResult Login(User user)
         {
-
-            IActionResult response = Unauthorized();
+            bool success = false;
             var user_ = AuthenticateUser(user);
             var userInDb = _context.Users.SingleOrDefault(u => u.Email == user.Email);
             if (userInDb == null)
@@ -103,13 +104,16 @@ namespace NoteKeeper.Controllers.Api
             }
 
 
-            if (user_ != null)
+            if (user_ == null)
             {
-                var token = GenerateToken(user_);
-                response = Ok(new { token = token });
+                return NotFound();
+
             }
-            Console.WriteLine("Login Method Executed");
-            return response;
+            var token = GenerateToken(user_);
+            success = true;
+            
+
+            return Ok(new { token, success });
         }
 
 
@@ -143,6 +147,7 @@ namespace NoteKeeper.Controllers.Api
         [HttpPost]
         public IActionResult CreateUser(User user)
         {
+            bool success = false;
             var users = _context.Users.ToList();
             var email = users.SingleOrDefault(u => u.Email == user.Email);
             if (email != null)
@@ -158,13 +163,14 @@ namespace NoteKeeper.Controllers.Api
             try
             {
                 _context.SaveChanges();
+                success = true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
             // return user;
-            return Ok("User Created Succesfully : " + user.Id + ": " + user.Name + ": " + user.Email + ": ");
+            return Ok(new { success});
         }
 
         [HttpPut("{id}")]

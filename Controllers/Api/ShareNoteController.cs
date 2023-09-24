@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using NoteKeeper.Dtos;
@@ -9,6 +10,7 @@ namespace NoteKeeper.Controllers.Api
 {
     [ApiController]
     [Route("notekeeper/[controller]")]
+    [EnableCors("AllowLocalhost3000")]
     public class ShareNoteController : Controller
     {
         private MyDBContext _context;
