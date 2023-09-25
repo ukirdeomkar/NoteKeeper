@@ -59,12 +59,13 @@ namespace NoteKeeper.Controllers.Api
             var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
 
             // Return the unique link to the user
-            return Ok(new { link = $"{_configuration["Host:link"]}/notekeeper/sharenote/{shareNote.UniqueLink}" , permission = note.Permission});
+            return Ok(new { link = shareNote.UniqueLink , permission = note.Permission});
         }
 
         [AllowAnonymous]
         [HttpGet("{uniqueLink}")] 
         public IActionResult ViewNote(Guid uniqueLink) {
+            
             var note = _context.Notes.SingleOrDefault(n=>n.UniqueId == uniqueLink);
             if (note == null)
             {
@@ -75,11 +76,11 @@ namespace NoteKeeper.Controllers.Api
                 return BadRequest("Unauthorised Access : Cannot view this note");
             }
             var noteDto = _mapper.Map<NoteDto>(note);
-            return Ok(noteDto);
+            return Ok(noteDto );
         }
 
         [AllowAnonymous]
-        [HttpPut("edit/{uniqueLink}")]
+        [HttpPut("{uniqueLink}")]
         public IActionResult EditNote(Guid uniqueLink , Note noteInBody)
         {
             var note = _context.Notes.SingleOrDefault(n => n.UniqueId == uniqueLink);
