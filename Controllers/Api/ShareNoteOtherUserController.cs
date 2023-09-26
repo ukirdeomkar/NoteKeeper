@@ -79,6 +79,9 @@ namespace NoteKeeper.Controllers.Api
             }
             // Generate unique link from guid of note
             shareNote.UniqueLink = note.Id;
+            //Add Note Permission to db
+            note.Sharing = shareNote.Sharing;
+            note.Permission = shareNote.SharedPermission;
 
             if (shareNote.Sharing == ShareNote.sharedWithOtherUsers)
             {
@@ -92,9 +95,7 @@ namespace NoteKeeper.Controllers.Api
                 {
                     return BadRequest("This User does not exist");
                 }
-                //Add Note Permission to db
-                note.Sharing = shareNote.Sharing;
-                note.Permission = shareNote.SharedPermission;
+
 
                 if (userShared != null)
                 {
@@ -105,17 +106,20 @@ namespace NoteKeeper.Controllers.Api
                     if (check == null)
                     {
                         _context.ShareNoteOtherUsers.Add(ShareUser);
+                        
                     }
                     else
                     {
                         return BadRequest("The Note is Already Shared");
                     }
                 }
+                
+
             }
-            _context.SaveChanges();
+            
 
             var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
-
+            _context.SaveChanges();
             // Return the unique link to the user
             return Ok(new { link = shareNote.UniqueLink, permission = note.Permission });
         }
