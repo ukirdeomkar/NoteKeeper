@@ -34,7 +34,7 @@ namespace NoteKeeper.Controllers.Api
 
         [Authorize]
         [HttpGet("id/{id}")]
-        public IActionResult GetNoteById(int id)
+        public IActionResult GetNoteById(Guid id)
         {
             
             var note = _context.Notes.ToList().SingleOrDefault(u=>u.Id==id);
@@ -84,7 +84,7 @@ namespace NoteKeeper.Controllers.Api
 
             var DateAdded = DateTime.Now;
             note.DateAdded = DateAdded;
-            note.UniqueId = Guid.NewGuid();
+            note.Id = Guid.NewGuid();
             
 
             note.User = user;
@@ -103,7 +103,7 @@ namespace NoteKeeper.Controllers.Api
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateNotes(int id, Note note)
+        public IActionResult UpdateNotes(Guid id, Note note)
         {
            
             var noteinDB = _context.Notes.SingleOrDefault(u => u.Id == id);
@@ -149,7 +149,7 @@ namespace NoteKeeper.Controllers.Api
 
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult DeleteNote(int id)
+        public IActionResult DeleteNote(Guid id)
         {
             var note = _context.Notes.SingleOrDefault(c => c.Id == id);
             if (note == null)

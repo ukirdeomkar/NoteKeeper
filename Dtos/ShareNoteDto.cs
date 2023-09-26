@@ -5,7 +5,8 @@ namespace NoteKeeper.Dtos
     public class ShareNoteDto
     {
 
-        public string? UniqueLink { get; set; }
+        public Guid? UniqueLink { get; set; }
+        public bool Sharing { get; set; }
         public int Permission { get; set; } // "view", "edit", "delete"
 
 

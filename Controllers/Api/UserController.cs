@@ -38,7 +38,7 @@ namespace NoteKeeper.Controllers.Api
         private User AuthenticateUser(User user)
         {
             User _user = null;
-            var userinDB = _context.Users.ToList().Single(u => u.Email == user.Email);
+            var userinDB = _context.Users.ToList().SingleOrDefault(u => u.Email == user.Email);
             Console.WriteLine("Authentication Started");
             //bool verify_password = BC.Verify(user.Password, userinDB.Password);
             //Console.WriteLine(verify_password);
@@ -100,13 +100,13 @@ namespace NoteKeeper.Controllers.Api
             var userInDb = _context.Users.SingleOrDefault(u => u.Email == user.Email);
             if (userInDb == null)
             {
-                return BadRequest("No Account Exist");
+                return BadRequest(new {error="No User Found with this credentials"});
             }
 
 
             if (user_ == null)
             {
-                return NotFound();
+                return BadRequest(new {error="Enter Valid Credentials"});
 
             }
             var token = GenerateToken(user_);
@@ -152,7 +152,7 @@ namespace NoteKeeper.Controllers.Api
             var email = users.SingleOrDefault(u => u.Email == user.Email);
             if (email != null)
             {
-                return BadRequest("Email is Already Registered. Try with different email");
+                return BadRequest(new {error = "Email is Already Registered. Try with different email" });
             }
             //Todo : AddPassword Hashing
 

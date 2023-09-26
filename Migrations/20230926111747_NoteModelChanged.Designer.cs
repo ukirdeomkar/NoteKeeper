@@ -12,8 +12,8 @@ using NoteKeeper.Models;
 namespace NoteKeeper.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20230921093639_Initial")]
-    partial class Initial
+    [Migration("20230926111747_NoteModelChanged")]
+    partial class NoteModelChanged
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,11 +26,9 @@ namespace NoteKeeper.Migrations
 
             modelBuilder.Entity("NoteKeeper.Models.Note", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("datetime2");
@@ -38,6 +36,12 @@ namespace NoteKeeper.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Permission")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Sharing")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -66,7 +70,6 @@ namespace NoteKeeper.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")

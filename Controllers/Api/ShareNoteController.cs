@@ -25,7 +25,7 @@ namespace NoteKeeper.Controllers.Api
 
         [Authorize]
         [HttpPost("share/{noteId}")]
-        public IActionResult SharingNote(int noteId, ShareNote shareNote)
+        public IActionResult SharingNote(Guid noteId, ShareNote shareNote)
         {
             if (shareNote == null)
             {
@@ -50,9 +50,10 @@ namespace NoteKeeper.Controllers.Api
             }
 
             // Generate unique link from guid of note
-            shareNote.UniqueLink = note.UniqueId;
+            shareNote.UniqueLink = note.Id;
 
             //Add Note Permission to db
+            note.Sharing = shareNote.Sharing;
             note.Permission = shareNote.SharedPermission;
             _context.SaveChanges();
 
@@ -66,7 +67,7 @@ namespace NoteKeeper.Controllers.Api
         [HttpGet("{uniqueLink}")] 
         public IActionResult ViewNote(Guid uniqueLink) {
             
-            var note = _context.Notes.SingleOrDefault(n=>n.UniqueId == uniqueLink);
+            var note = _context.Notes.SingleOrDefault(n=>n.Id == uniqueLink);
             if (note == null)
             {
                 return NotFound();
@@ -83,7 +84,7 @@ namespace NoteKeeper.Controllers.Api
         [HttpPut("{uniqueLink}")]
         public IActionResult EditNote(Guid uniqueLink , Note noteInBody)
         {
-            var note = _context.Notes.SingleOrDefault(n => n.UniqueId == uniqueLink);
+            var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             
 
             if (note == null)
@@ -107,7 +108,7 @@ namespace NoteKeeper.Controllers.Api
         [HttpDelete("{uniqueLink}")]
         public IActionResult DeleteNote(Guid uniqueLink)
         {
-            var note = _context.Notes.SingleOrDefault(n => n.UniqueId == uniqueLink);
+            var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (note == null)
             {
                 return NotFound();

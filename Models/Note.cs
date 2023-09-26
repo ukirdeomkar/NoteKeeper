@@ -5,20 +5,20 @@ namespace NoteKeeper.Models
 {
     public class Note
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         public string Title { get; set; }
         [Required]
         public string Description { get; set; }
         public DateTime DateAdded { get; set; }
-        public Guid UniqueId { get; set; }
 
 
         [ForeignKey("UserId")]
         public int UserId{ get; set; }
         public User? User { get; set; }
 
+        public bool Sharing {  get; set; } = false;
         public int Permission { get; set; } = 0;// "view", "edit", "delete"
 
 
