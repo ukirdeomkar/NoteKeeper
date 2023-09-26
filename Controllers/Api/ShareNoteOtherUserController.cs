@@ -39,12 +39,11 @@ namespace NoteKeeper.Controllers.Api
             //{
             //    return BadRequest("Unauthorised Access");
             //}
-            var note = _context.Notes.Include(n=>n.User).ToList().Where(u => u.UserId.ToString() == userid);
+            var note = _context.Notes.Include(n=>n.User).ToList();
             if (note == null)
             {
                 return BadRequest("Not Found");
             }
-            
             var noteDto = note.Select(note => _mapper.Map<NoteDto>(note)).Where(n=>n.Sharing>0);
             return Ok(noteDto);
 
