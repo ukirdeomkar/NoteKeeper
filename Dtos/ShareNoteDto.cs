@@ -6,7 +6,7 @@ namespace NoteKeeper.Dtos
     {
 
         public Guid? UniqueLink { get; set; }
-        public bool Sharing { get; set; }
+        public int Sharing { get; set; }
         public int Permission { get; set; } // "view", "edit", "delete"
 
 

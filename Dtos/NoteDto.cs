@@ -11,7 +11,7 @@ namespace NoteKeeper.Dtos
         public string Title { get; set; }
         [Required]
         public string Description { get; set; }
-        public bool Sharing{ get; set; }
+        public int Sharing{ get; set; }
 
         public DateTime DateAdded { get; set; }
 

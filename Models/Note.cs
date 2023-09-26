@@ -18,7 +18,7 @@ namespace NoteKeeper.Models
         public int UserId{ get; set; }
         public User? User { get; set; }
 
-        public bool Sharing {  get; set; } = false;
+        public int Sharing {  get; set; } = 0;
         public int Permission { get; set; } = 0;// "view", "edit", "delete"
 
 

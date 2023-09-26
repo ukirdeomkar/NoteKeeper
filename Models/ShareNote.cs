@@ -3,7 +3,7 @@
     public class ShareNote
     {
         public Guid? UniqueLink { get; set; }
-        public bool Sharing { get; set; }
+        public int Sharing { get; set; }
         public int SharedPermission { get; set; } // "view", "edit", "delete"
 
 
