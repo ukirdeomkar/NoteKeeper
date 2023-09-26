@@ -14,6 +14,7 @@ namespace NoteKeeper.Dtos
         public int Sharing{ get; set; }
 
         public DateTime DateAdded { get; set; }
+        public UserDto? User { get; set; }
 
         public int UserId { get; set; }
         public int? Permission { get; set; }

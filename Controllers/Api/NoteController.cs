@@ -52,6 +52,7 @@ namespace NoteKeeper.Controllers.Api
             return Ok(noteDto);
 
         }
+
         [HttpGet("user/notes")]
 
         [Authorize]
@@ -65,7 +66,7 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.ToList().Where(u => u.UserId.ToString() == userid);
             if (note == null)
             {
-                Console.WriteLine("Not Found");
+                return BadRequest("Not Found");
             }
             var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
             return Ok(noteDto);

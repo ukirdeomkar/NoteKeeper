@@ -12,6 +12,7 @@ namespace NoteKeeper.Profiles
                 CreateMap<Note, NoteDto>();
                 CreateMap<User, UserDto>();
                 CreateMap<ShareNote, ShareNoteDto>();
+            CreateMap<ShareNoteOtherUsers,ShareNoteOtherUserDto>();
             }
         
     }
