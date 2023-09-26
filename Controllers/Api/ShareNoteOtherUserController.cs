@@ -39,13 +39,17 @@ namespace NoteKeeper.Controllers.Api
             //{
             //    return BadRequest("Unauthorised Access");
             //}
-            var note = _context.Notes.Include(n=>n.User).ToList();
-            if (note == null)
+            var user = _context.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userid);
+
+            if (user == null)
             {
                 return BadRequest("Not Found");
             }
-            var noteDto = note.Select(note => _mapper.Map<NoteDto>(note)).Where(n=>n.Sharing>0);
-            return Ok(noteDto);
+            var relations = _context.ShareNoteOtherUsers.Where(u => u.UserId == user.Id).ToList();
+            var noteIds = relations.Select(relation => relation.NoteId).ToList();
+            var notes = _context.Notes.Include(n => n.User).Where(n => noteIds.Contains(n.Id)).ToList();
+            var noteDto = notes.Select(notes => _mapper.Map<NoteDto>(notes)).Where(n => n.Sharing > 0);
+            return Ok(notes);
 
         }
 
@@ -70,7 +74,7 @@ namespace NoteKeeper.Controllers.Api
             }
 
             var userWithAccess = User.FindFirst("id")?.Value;
-            
+
 
             if (userPerformingDelete.Id.ToString() != userWithAccess)
             {
@@ -101,21 +105,21 @@ namespace NoteKeeper.Controllers.Api
                     var ShareUser = new ShareNoteOtherUsers();
                     ShareUser.NoteId = note.Id;
                     ShareUser.UserId = userShared.Id;
-                    var check = _context.ShareNoteOtherUsers.SingleOrDefault(u => u.NoteId == ShareUser.NoteId && u.UserId == u.UserId );
+                    var check = _context.ShareNoteOtherUsers.SingleOrDefault(u => u.NoteId == ShareUser.NoteId && u.UserId == u.UserId);
                     if (check == null)
                     {
                         _context.ShareNoteOtherUsers.Add(ShareUser);
-                        
+
                     }
                     else
                     {
                         return BadRequest("The Note is Already Shared");
                     }
                 }
-                
+
 
             }
-            
+
 
             var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
             _context.SaveChanges();
