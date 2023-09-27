@@ -72,7 +72,7 @@ namespace NoteKeeper.Controllers.Api
             {
                 return NotFound();
             }
-            if( note.Permission == Note.notShared)
+            if( note.Permission == Note.notShared )
             {
                 return BadRequest("Unauthorised Access : Cannot view this note");
             }

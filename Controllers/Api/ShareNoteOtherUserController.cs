@@ -131,7 +131,7 @@ namespace NoteKeeper.Controllers.Api
 
 
         [Authorize]
-        [HttpDelete("{uniqueLink}")]
+        [HttpDelete("user/{uniqueLink}")]
         public IActionResult RemoveNoteAccessFromUser(Guid uniqueLink , UserDto sharedUserEmail)
         {
             //var userid = User.FindFirst("id")?.Value;
@@ -150,6 +150,66 @@ namespace NoteKeeper.Controllers.Api
             _context.SaveChanges();
 
             return Ok(new { Success = "Acces removed for email "+ sharedUserEmail.Email });
+        }
+
+        [Authorize]
+        [HttpPut("{uniqueLink}")]
+        public IActionResult EditNote(Guid uniqueLink, Note noteInBody)
+        {
+            var userid = User.FindFirst("id")?.Value;
+            var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
+            if (note == null)
+            {
+                return NotFound();
+            }
+            var relation = _context.ShareNoteOtherUsers.SingleOrDefault(n => n.NoteId == note.Id && n.UserId.ToString() == userid);
+            if (relation == null)
+            {
+                return BadRequest("You dont have permission to access to this note");
+            }
+            if (note.Permission < ShareNote.editNote || note.Sharing == ShareNote.notShared)
+            {
+                return BadRequest("Unauthorised Access : Cannot Edit this Note");
+            }
+            note.Title = noteInBody.Title;
+            note.Description = noteInBody.Description;
+            _context.SaveChanges();
+
+            return Ok(note);
+
+        }
+
+
+        [Authorize]
+        [HttpDelete("{uniqueLink}")]
+        public IActionResult DeleteNote(Guid uniqueLink)
+        {
+            var userid = User.FindFirst("id")?.Value;
+            var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
+            if (note == null )
+            {
+                return NotFound();
+            }
+            var relation = _context.ShareNoteOtherUsers.SingleOrDefault(n => n.NoteId == note.Id && n.UserId.ToString() == userid);
+            if (relation == null)
+            {
+                return BadRequest("You dont have permission to access to this note");
+            }
+            if (note.Permission < Note.deleteNote || note.Sharing == ShareNote.notShared)
+            {
+                return BadRequest("Unauthorised Action : Dont Have Permission to delete");
+            }
+
+            var sharedNotes = _context.ShareNoteOtherUsers.Where(n => n.NoteId == uniqueLink);
+            Console.WriteLine("\nThe notes to be deleted have count :"+sharedNotes.Count()+"\n");
+
+            _context.ShareNoteOtherUsers.RemoveRange(sharedNotes);
+            _context.SaveChanges();
+
+            _context.Notes.Remove(note);
+            _context.SaveChanges();
+
+            return Ok(new { Success = "note deleted succesfuly" });
         }
     }
 }
