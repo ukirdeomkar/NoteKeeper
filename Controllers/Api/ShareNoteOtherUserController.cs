@@ -105,7 +105,8 @@ namespace NoteKeeper.Controllers.Api
                     var ShareUser = new ShareNoteOtherUsers();
                     ShareUser.NoteId = note.Id;
                     ShareUser.UserId = userShared.Id;
-                    var check = _context.ShareNoteOtherUsers.SingleOrDefault(u => u.NoteId == ShareUser.NoteId && u.UserId == u.UserId);
+                    //Console.WriteLine("The Shared USer is :"+ShareUser.NoteId + "   " + ShareUser.UserId);
+                    var check = _context.ShareNoteOtherUsers.SingleOrDefault(u => u.NoteId == ShareUser.NoteId && u.UserId == ShareUser.UserId);
                     if (check == null)
                     {
                         _context.ShareNoteOtherUsers.Add(ShareUser);
@@ -121,10 +122,34 @@ namespace NoteKeeper.Controllers.Api
             }
 
 
-            var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
             _context.SaveChanges();
+            var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
+            
             // Return the unique link to the user
             return Ok(new { link = shareNote.UniqueLink, permission = note.Permission });
+        }
+
+
+        [Authorize]
+        [HttpDelete("{uniqueLink}")]
+        public IActionResult RemoveNoteAccessFromUser(Guid uniqueLink , UserDto sharedUserEmail)
+        {
+            //var userid = User.FindFirst("id")?.Value;
+            var sharedUser = _context.Users.SingleOrDefault(s=>s.Email ==  sharedUserEmail.Email);
+            if(sharedUser == null)
+            {
+                return NotFound("The user does not exist");
+            }
+            var noteSharedUser = _context.ShareNoteOtherUsers.ToList().SingleOrDefault(s=>s.NoteId == uniqueLink && s.UserId == sharedUser.Id );
+            //var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
+            if (noteSharedUser == null)
+            {
+                return NotFound("The note was not shared with this user");
+            }
+            _context.ShareNoteOtherUsers.Remove(noteSharedUser);
+            _context.SaveChanges();
+
+            return Ok(new { Success = "Acces removed for email "+ sharedUserEmail.Email });
         }
     }
 }
