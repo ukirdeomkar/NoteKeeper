@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NoteKeeper.Dtos;
 using NoteKeeper.Models;
+using System.Runtime.Intrinsics.X86;
 
 namespace NoteKeeper.Controllers.Api
 {
@@ -84,50 +85,74 @@ namespace NoteKeeper.Controllers.Api
             shareNote.UniqueLink = note.Id;
             //Add Note Permission to db
             note.Sharing = shareNote.Sharing;
-            note.Permission = shareNote.SharedPermission;
+            note.Permission = shareNote.SharedPermission;   
+            _context.SaveChanges();
+            // Return the unique link to the user
+            return Ok(new { link = shareNote.UniqueLink, permission = note.Permission , sharing = note.Sharing });
+        }
 
-            if (shareNote.Sharing == ShareNote.sharedWithOtherUsers)
+        [Authorize]
+        [HttpPost("emails/{noteId}")]
+        public IActionResult AddingEmailsToShareNotes(Guid noteId,[FromBody] ShareToEmails shareToEmails)
+        {
+            Console.WriteLine("Entered Here to Play");
+            var note = _context.Notes.SingleOrDefault(n => n.Id == noteId);
+            if (note == null)
             {
-                var userWithAccessValue = _context.Users.SingleOrDefault(u => u.Id.ToString() == userWithAccess);
-                if (shareNote.Email == null || shareNote.Email == userWithAccessValue.Email)
-                {
-                    return BadRequest("Please add valid email to share");
-                }
-                var userShared = _context.Users.SingleOrDefault(u => u.Email == shareNote.Email);
-                if (userShared == null)
-                {
-                    return BadRequest("This User does not exist");
-                }
+                return NotFound();
+            }
 
+            var userWithAccess = User.FindFirst("id")?.Value;
+            var userWithAccessValue = _context.Users.SingleOrDefault(u => u.Id.ToString() == userWithAccess);
 
-                if (userShared != null)
+            if (shareToEmails.ShareNote.Sharing == ShareNote.sharedWithOtherUsers && shareToEmails.ShareNote.SharedPermission > ShareNote.notShared)
+            {
+                foreach (var email in shareToEmails.EmailList)
                 {
-                    var ShareUser = new ShareNoteOtherUsers();
-                    ShareUser.NoteId = note.Id;
-                    ShareUser.UserId = userShared.Id;
-                    //Console.WriteLine("The Shared USer is :"+ShareUser.NoteId + "   " + ShareUser.UserId);
+                    if (string.IsNullOrWhiteSpace(email))
+                    {
+                        return BadRequest("Invalid email address in the list.");
+                    }
+
+                    if (email == userWithAccessValue.Email)
+                    {
+                        return BadRequest("You cannot share with yourself.");
+                    }
+
+                    var userShared = _context.Users.SingleOrDefault(u => u.Email == email);
+                    if (userShared == null)
+                    {
+                        return BadRequest($"User with email {email} does not exist.");
+                    }
+
+                    var ShareUser = new ShareNoteOtherUsers
+                    {
+                        NoteId = note.Id,
+                        UserId = userShared.Id
+                    };
+
                     var check = _context.ShareNoteOtherUsers.SingleOrDefault(u => u.NoteId == ShareUser.NoteId && u.UserId == ShareUser.UserId);
                     if (check == null)
                     {
                         _context.ShareNoteOtherUsers.Add(ShareUser);
-
                     }
                     else
                     {
-                        return BadRequest("The Note is Already Shared");
+                        return BadRequest("The Note is Already Shared with one or more users.");
                     }
                 }
-
-
+            }
+            else
+            {
+                return BadRequest("This Request cannot be completed to add emails");
             }
 
-
             _context.SaveChanges();
-            var shareNoteDto = _mapper.Map<ShareNoteDto>(shareNote);
             
-            // Return the unique link to the user
-            return Ok(new { link = shareNote.UniqueLink, permission = note.Permission });
+            return Ok(new { link = note.Id, permission = note.Permission });
         }
+      
+
 
 
         [Authorize]
