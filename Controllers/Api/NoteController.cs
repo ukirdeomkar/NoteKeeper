@@ -166,7 +166,11 @@ namespace NoteKeeper.Controllers.Api
                 return BadRequest("Unauthorised Action");
             }
 
-            // TODO : Check User Token while deleting from localStorage or someother way to confirm user identity
+            var sharedNotes = _context.ShareNoteOtherUsers.Where(n => n.NoteId == id);
+            Console.WriteLine("\nThe notes to be deleted have count :" + sharedNotes.Count() + "\n");
+
+            _context.ShareNoteOtherUsers.RemoveRange(sharedNotes);
+            _context.SaveChanges();
 
 
 
