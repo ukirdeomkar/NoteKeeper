@@ -60,15 +60,16 @@ namespace NoteKeeper.Controllers.Api
         public IActionResult ViewNote(Guid uniqueLink)
         {
             var userid = User.FindFirst("id")?.Value;
+            Console.WriteLine("\n\n The USer ID is :"+userid +"\n\n");
             var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (note == null)
             {
                 return NotFound();
             }
-            if (note.Permission == Note.notShared || note.Sharing != ShareNote.sharedAnonymously || note.Sharing !=ShareNote.notShared)
-            {
-                return BadRequest("Unauthorised Access : Cannot view this note");
-            }
+            //if (note.Permission == Note.notShared || note.Sharing != ShareNote.sharedAnonymously || note.Sharing !=ShareNote.notShared)
+            //{
+            //    return BadRequest("Unauthorised Access : Cannot view this note");
+            //}
             var check = _context.ShareNoteOtherUsers.SingleOrDefault(n=>n.NoteId == uniqueLink  && n.UserId.ToString()== userid);
             if (check == null)
             {
