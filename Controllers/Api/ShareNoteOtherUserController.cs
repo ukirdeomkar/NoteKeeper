@@ -48,7 +48,8 @@ namespace NoteKeeper.Controllers.Api
             }
             var relations = _context.ShareNoteOtherUsers.Where(u => u.UserId == user.Id).ToList();
             var noteIds = relations.Select(relation => relation.NoteId).ToList();
-            var notes = _context.Notes.Include(n => n.User).Where(n => noteIds.Contains(n.Id)).ToList();
+            var notes = _context.Notes.Include(n => n.User).Where(n => noteIds.Contains(n.Id) && n.Permission > 0).ToList();
+
             var noteDto = notes.Select(notes => _mapper.Map<NoteDto>(notes)).Where(n => n.Sharing > 0);
             return Ok(notes);
 
@@ -118,7 +119,7 @@ namespace NoteKeeper.Controllers.Api
         [HttpPost("emails/{noteId}")]
         public IActionResult AddingEmailsToShareNotes(Guid noteId,[FromBody] ShareToEmails shareToEmails)
         {
-            Console.WriteLine("Entered Here to Play");
+            bool success = false;
             var note = _context.Notes.SingleOrDefault(n => n.Id == noteId);
             if (note == null)
             {
@@ -169,10 +170,10 @@ namespace NoteKeeper.Controllers.Api
             {
                 return BadRequest("This Request cannot be completed to add emails");
             }
-
+            success = true;
             _context.SaveChanges();
             
-            return Ok(new { link = note.Id, permission = note.Permission });
+            return Ok(new { link = note.Id, permission = note.Permission , success });
         }
 
         [Authorize]
@@ -194,10 +195,11 @@ namespace NoteKeeper.Controllers.Api
 
 
         [Authorize]
-        [HttpDelete("user/{uniqueLink}")]
+        [HttpDelete("emails/{uniqueLink}")]
         public IActionResult RemoveNoteAccessFromUser(Guid uniqueLink , UserDto sharedUserEmail)
         {
             //var userid = User.FindFirst("id")?.Value;
+            bool success = false;
             var sharedUser = _context.Users.SingleOrDefault(s=>s.Email ==  sharedUserEmail.Email);
             if(sharedUser == null)
             {
@@ -211,8 +213,9 @@ namespace NoteKeeper.Controllers.Api
             }
             _context.ShareNoteOtherUsers.Remove(noteSharedUser);
             _context.SaveChanges();
+            success=true;
 
-            return Ok(new { Success = "Acces removed for email "+ sharedUserEmail.Email });
+            return Ok(new { success});
         }
 
         [Authorize]
@@ -225,6 +228,7 @@ namespace NoteKeeper.Controllers.Api
             {
                 return NotFound();
             }
+
             var relation = _context.ShareNoteOtherUsers.SingleOrDefault(n => n.NoteId == note.Id && n.UserId.ToString() == userid);
             if (relation == null)
             {
