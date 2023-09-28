@@ -54,6 +54,29 @@ namespace NoteKeeper.Controllers.Api
 
         }
 
+        [Authorize]
+        [HttpGet("{uniqueLink}")]
+        public IActionResult ViewNote(Guid uniqueLink)
+        {
+            var userid = User.FindFirst("id")?.Value;
+            var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
+            if (note == null)
+            {
+                return NotFound();
+            }
+            if (note.Permission == Note.notShared || note.Sharing != ShareNote.sharedAnonymously || note.Sharing !=ShareNote.notShared)
+            {
+                return BadRequest("Unauthorised Access : Cannot view this note");
+            }
+            var check = _context.ShareNoteOtherUsers.SingleOrDefault(n=>n.NoteId == uniqueLink  && n.UserId.ToString()== userid);
+            if (check == null)
+            {
+                return BadRequest("You do not have access to this Note");
+            }
+            var noteDto = _mapper.Map<NoteDto>(note);
+            return Ok(noteDto);
+        }
+
 
         [Authorize]
         [HttpPost("{noteId}")]
@@ -151,7 +174,22 @@ namespace NoteKeeper.Controllers.Api
             
             return Ok(new { link = note.Id, permission = note.Permission });
         }
-      
+
+        [Authorize]
+        [HttpGet("emails/{noteId}")]
+        public IActionResult GetSharedEmails(Guid noteId)
+        {
+            // Get the list of shared users' email addresses for the specified noteId
+            var sharedEmails = _context.ShareNoteOtherUsers.Include(u=>u.User).Where(u=>u.NoteId == noteId ).Select(u => u.User.Email ).ToList();
+
+            if (sharedEmails.Count == 0)
+            {
+                return NotFound("No shared emails found for the specified note.");
+            }
+
+            return Ok(sharedEmails);
+        }
+
 
 
 
