@@ -36,15 +36,11 @@ namespace NoteKeeper.Controllers.Api
         public IActionResult GetSharedNoteByUserId()
         {
             var userid = User.FindFirst("id")?.Value;
-            //if(userIdwithAcess != userid.ToString())
-            //{
-            //    return BadRequest("Unauthorised Access");
-            //}
             var user = _context.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userid);
 
             if (user == null)
             {
-                return BadRequest("Not Found");
+                return BadRequest(new { error = "Not Found" });
             }
             var relations = _context.ShareNoteOtherUsers.Where(u => u.UserId == user.Id).ToList();
             var noteIds = relations.Select(relation => relation.NoteId).ToList();
@@ -60,20 +56,15 @@ namespace NoteKeeper.Controllers.Api
         public IActionResult ViewNote(Guid uniqueLink)
         {
             var userid = User.FindFirst("id")?.Value;
-            Console.WriteLine("\n\n The USer ID is :"+userid +"\n\n");
             var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (note == null)
             {
-                return NotFound();
+                return NotFound(new{error="Not Found"});
             }
-            //if (note.Permission == Note.notShared || note.Sharing != ShareNote.sharedAnonymously || note.Sharing !=ShareNote.notShared)
-            //{
-            //    return BadRequest("Unauthorised Access : Cannot view this note");
-            //}
             var check = _context.ShareNoteOtherUsers.SingleOrDefault(n=>n.NoteId == uniqueLink  && n.UserId.ToString()== userid);
             if (check == null)
             {
-                return BadRequest("You do not have access to this Note");
+                return BadRequest(new {error= "You do not have access to this Note" });
             }
             var noteDto = _mapper.Map<NoteDto>(note);
             return Ok(noteDto);
@@ -84,9 +75,10 @@ namespace NoteKeeper.Controllers.Api
         [HttpPost("{noteId}")]
         public IActionResult SharingNote(Guid noteId, ShareNote shareNote)
         {
+            bool success= false;
             if (shareNote == null)
             {
-                return BadRequest("Provide Proper Share Request");
+                return BadRequest(new { error = "Provide Proper Share Request" });
             }
             var note = _context.Notes.SingleOrDefault(n => n.Id == noteId);
             if (note == null)
@@ -96,7 +88,7 @@ namespace NoteKeeper.Controllers.Api
             var userPerformingDelete = _context.Users.SingleOrDefault(u => u.Id == note.UserId);
             if (userPerformingDelete == null)
             {
-                return BadRequest("Note or User Not Found");
+                return BadRequest(new { error = "Note or User Not Found" });
             }
 
             var userWithAccess = User.FindFirst("id")?.Value;
@@ -104,7 +96,7 @@ namespace NoteKeeper.Controllers.Api
 
             if (userPerformingDelete.Id.ToString() != userWithAccess)
             {
-                return BadRequest("Unauthorised Action");
+                return BadRequest(new {error= "Unauthorised Action" });
             }
             // Generate unique link from guid of note
             shareNote.UniqueLink = note.Id;
@@ -112,8 +104,9 @@ namespace NoteKeeper.Controllers.Api
             note.Sharing = shareNote.Sharing;
             note.Permission = shareNote.SharedPermission;   
             _context.SaveChanges();
+            success= true;
             // Return the unique link to the user
-            return Ok(new { link = shareNote.UniqueLink, permission = note.Permission , sharing = note.Sharing });
+            return Ok(new { link = shareNote.UniqueLink, permission = note.Permission , sharing = note.Sharing , success });
         }
 
         [Authorize]
@@ -124,7 +117,7 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.SingleOrDefault(n => n.Id == noteId);
             if (note == null)
             {
-                return NotFound();
+                return NotFound(new {error="Not Found"});
             }
 
             var userWithAccess = User.FindFirst("id")?.Value;
@@ -136,18 +129,20 @@ namespace NoteKeeper.Controllers.Api
                 {
                     if (string.IsNullOrWhiteSpace(email))
                     {
-                        return BadRequest("Invalid email address in the list.");
+                        return BadRequest(new { error = "Invalid email address in the list." });
                     }
-
+                    #pragma warning disable
                     if (email == userWithAccessValue.Email)
                     {
-                        return BadRequest("You cannot share with yourself.");
+
+                        return BadRequest(new { error = "You cannot share with yourself." });
                     }
+                    #pragma warning restore
 
                     var userShared = _context.Users.SingleOrDefault(u => u.Email == email);
                     if (userShared == null)
                     {
-                        return BadRequest($"User with email {email} does not exist.");
+                        return BadRequest(new {error= $"User with email {email} does not exist." });
                     }
 
                     var ShareUser = new ShareNoteOtherUsers
@@ -163,13 +158,13 @@ namespace NoteKeeper.Controllers.Api
                     }
                     else
                     {
-                        return BadRequest("The Note is Already Shared with one or more users.");
+                        return BadRequest(new { error = "The Note is Already Shared with one or more users." });
                     }
                 }
             }
             else
             {
-                return BadRequest("This Request cannot be completed to add emails");
+                return BadRequest(new { error = "This Request cannot be completed to add emails" });
             }
             success = true;
             _context.SaveChanges();
@@ -186,7 +181,7 @@ namespace NoteKeeper.Controllers.Api
 
             if (sharedEmails.Count == 0)
             {
-                return NotFound("No shared emails found for the specified note.");
+                return NotFound(new { error = "No shared emails found for the specified note." });
             }
 
             return Ok(sharedEmails);
@@ -204,13 +199,13 @@ namespace NoteKeeper.Controllers.Api
             var sharedUser = _context.Users.SingleOrDefault(s=>s.Email ==  sharedUserEmail.Email);
             if(sharedUser == null)
             {
-                return NotFound("The user does not exist");
+                return NotFound(new { error = "The user does not exist" });
             }
             var noteSharedUser = _context.ShareNoteOtherUsers.ToList().SingleOrDefault(s=>s.NoteId == uniqueLink && s.UserId == sharedUser.Id );
             //var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (noteSharedUser == null)
             {
-                return NotFound("The note was not shared with this user");
+                return NotFound(new { error = "The note was not shared with this user" });
             }
             _context.ShareNoteOtherUsers.Remove(noteSharedUser);
             _context.SaveChanges();
@@ -223,27 +218,29 @@ namespace NoteKeeper.Controllers.Api
         [HttpPut("{uniqueLink}")]
         public IActionResult EditNote(Guid uniqueLink, Note noteInBody)
         {
+            bool success = false;
             var userid = User.FindFirst("id")?.Value;
             var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (note == null)
             {
-                return NotFound();
+                return NotFound(new {error="Not Found"});
             }
 
             var relation = _context.ShareNoteOtherUsers.SingleOrDefault(n => n.NoteId == note.Id && n.UserId.ToString() == userid);
             if (relation == null)
             {
-                return BadRequest("You dont have permission to access to this note");
+                return BadRequest(new { error = "You dont have permission to access to this note" });
             }
             if (note.Permission < ShareNote.editNote || note.Sharing == ShareNote.notShared)
             {
-                return BadRequest("Unauthorised Access : Cannot Edit this Note");
+                return BadRequest(new { error = "Unauthorised Access : Cannot Edit this Note" });
             }
             note.Title = noteInBody.Title;
             note.Description = noteInBody.Description;
+            
             _context.SaveChanges();
-
-            return Ok(note);
+            success = true;
+            return Ok(success);
 
         }
 
@@ -256,20 +253,19 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (note == null )
             {
-                return NotFound();
+                return NotFound(new {error="Not Found"});
             }
             var relation = _context.ShareNoteOtherUsers.SingleOrDefault(n => n.NoteId == note.Id && n.UserId.ToString() == userid);
             if (relation == null)
             {
-                return BadRequest("You dont have permission to access to this note");
+                return BadRequest(new { error ="You dont have permission to access to this note" });
             }
             if (note.Permission < Note.deleteNote || note.Sharing == ShareNote.notShared)
             {
-                return BadRequest("Unauthorised Action : Dont Have Permission to delete");
+                return BadRequest(new {error= "Unauthorised Action : Dont Have Permission to delete" });
             }
 
             var sharedNotes = _context.ShareNoteOtherUsers.Where(n => n.NoteId == uniqueLink);
-            Console.WriteLine("\nThe notes to be deleted have count :"+sharedNotes.Count()+"\n");
 
             _context.ShareNoteOtherUsers.RemoveRange(sharedNotes);
             _context.SaveChanges();
@@ -277,7 +273,7 @@ namespace NoteKeeper.Controllers.Api
             _context.Notes.Remove(note);
             _context.SaveChanges();
 
-            return Ok(new { Success = "note deleted succesfuly" });
+            return Ok(new { success = "note deleted succesfuly" });
         }
     }
 }

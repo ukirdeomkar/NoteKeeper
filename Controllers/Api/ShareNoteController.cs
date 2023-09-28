@@ -29,24 +29,24 @@ namespace NoteKeeper.Controllers.Api
         {
             if (shareNote == null)
             {
-                return BadRequest("Provide Proper Share Request");
+                return BadRequest(new {error= "Provide Proper Share Request" });
             }
             var note = _context.Notes.SingleOrDefault(n => n.Id == noteId);
             if (note == null)
             {
-                return NotFound();
+                return NotFound(new {error= "Not Found" });
             }
             var userPerformingDelete = _context.Users.SingleOrDefault(u => u.Id == note.UserId);
             if (userPerformingDelete == null)
             {
-                return BadRequest("Note or User Not Found");
+                return BadRequest(new {error= "Note or User Not Found" });
             }
 
             var userWithAccess = User.FindFirst("id")?.Value;
 
             if (userPerformingDelete.Id.ToString() != userWithAccess)
             {
-                return BadRequest("Unauthorised Action");
+                return BadRequest(new { error="Unauthorised Action" });
             }
 
             // Generate unique link from guid of note
@@ -70,11 +70,11 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.SingleOrDefault(n=>n.Id == uniqueLink);
             if (note == null)
             {
-                return NotFound();
+                return NotFound(new {error="Not Found"});
             }
             if( note.Permission == Note.notShared  || note.Sharing != ShareNote.sharedAnonymously)
             {
-                return BadRequest("Unauthorised Access : Cannot view this note");
+                return BadRequest(new {error= "Unauthorised Access : Cannot view this note" });
             }
             var noteDto = _mapper.Map<NoteDto>(note);
             return Ok(noteDto );
@@ -93,7 +93,7 @@ namespace NoteKeeper.Controllers.Api
             }
             if (note.Permission == Note.notShared || note.Permission < Note.editNote )
             {
-                return BadRequest("Unauthorised Access : Cannot Edit this Note");
+                return BadRequest(new { error = "Unauthorised Access : Cannot Edit this Note" });
             }
             note.Title = noteInBody.Title;
             note.Description = noteInBody.Description;
@@ -111,16 +111,16 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.SingleOrDefault(n => n.Id == uniqueLink);
             if (note == null)
             {
-                return NotFound();
+                return NotFound(new {error="Not Found"});
             }
             if(note.Permission < Note.deleteNote)
             {
-                return BadRequest("Unauthorised Action : Dont Have Permission to delete");
+                return BadRequest(new { error="Unauthorised Action : Dont Have Permission to delete" });
             }
             _context.Notes.Remove(note);
             _context.SaveChanges();
 
-            return Ok(new { Success = "note deleted succesfuly" });
+            return Ok(new { success = "note deleted succesfuly" });
         }
 
     }

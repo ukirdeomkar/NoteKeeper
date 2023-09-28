@@ -40,13 +40,13 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.ToList().SingleOrDefault(u=>u.Id==id);
             if (note == null)
             {
-                Console.WriteLine("Not Found");
+                return BadRequest(new {error = "Not Found"});
             }
             var userIdwithAcess = User.FindFirst("id")?.Value;
             var userid = note.UserId;
             if (userIdwithAcess != userid.ToString())
             {
-                return BadRequest("Unauthorised Access");
+                return BadRequest(new { error = "Unauthorised Access" });
             }
             var noteDto = _mapper.Map<NoteDto>(note);
             return Ok(noteDto);
@@ -59,14 +59,10 @@ namespace NoteKeeper.Controllers.Api
         public IActionResult GetNoteByUserId()
         {
             var userid = User.FindFirst("id")?.Value;
-            //if(userIdwithAcess != userid.ToString())
-            //{
-            //    return BadRequest("Unauthorised Access");
-            //}
             var note = _context.Notes.ToList().Where(u => u.UserId.ToString() == userid);
             if (note == null)
             {
-                return BadRequest("Not Found");
+                return BadRequest(new {error= "Not Found" });
             }
             var noteDto = note.Select(note => _mapper.Map<NoteDto>(note));
             return Ok(noteDto);
@@ -81,7 +77,6 @@ namespace NoteKeeper.Controllers.Api
             
             var userId = User.FindFirst("id")?.Value;
             var user = _context.Users.SingleOrDefault(u => u.Id.ToString() == userId);
-
 
             var DateAdded = DateTime.Now;
             note.DateAdded = DateAdded;
@@ -108,26 +103,24 @@ namespace NoteKeeper.Controllers.Api
         {
            
             var noteinDB = _context.Notes.SingleOrDefault(u => u.Id == id);
-            if (note == null)
+            if (note == null || noteinDB == null)
             {
-                return BadRequest("Empty Note");
+                return BadRequest(new {error= "Empty Note" });
             }
             
 
             var userPerformingDelete = _context.Users.SingleOrDefault(u => u.Id == noteinDB.UserId);
             if (userPerformingDelete == null)
             {
-                return BadRequest("Note or User Not Found");
+                return BadRequest(new {error= "Note or User Not Found" });
             }
 
             var userWithAccess = User.FindFirst("id")?.Value;
 
             if (userPerformingDelete.Id.ToString() != userWithAccess)
             {
-                return BadRequest("Unauthorised Action");
+                return BadRequest(new { error="Unauthorised Action" });
             }
-
-
            
                 noteinDB.Title = note.Title;
                 noteinDB.Description = note.Description;
@@ -155,7 +148,7 @@ namespace NoteKeeper.Controllers.Api
             var note = _context.Notes.SingleOrDefault(c => c.Id == id);
             if (note == null)
             {
-                return BadRequest("Note Not Found");
+                return BadRequest(new { error = "Note Not Found" });
             }
 
             var userPerformingDelete = _context.Users.Single(u => u.Id == note.UserId);
@@ -163,21 +156,21 @@ namespace NoteKeeper.Controllers.Api
             
             if (userPerformingDelete.Id.ToString() != userWithAccess)
             {
-                return BadRequest("Unauthorised Action");
+                return BadRequest(new { error = "Unauthorised Action" });
             }
 
             var sharedNotes = _context.ShareNoteOtherUsers.Where(n => n.NoteId == id);
-            Console.WriteLine("\nThe notes to be deleted have count :" + sharedNotes.Count() + "\n");
 
+
+            // remove foreign keys containing noteid 
             _context.ShareNoteOtherUsers.RemoveRange(sharedNotes);
             _context.SaveChanges();
 
-
-
+            // remove noteid
             _context.Notes.Remove(note);
             _context.SaveChanges();
 
-            return Ok(new {Success = "note deleted succesfuly"});
+            return Ok(new {success = "note deleted succesfuly"});
         }
 
     }

@@ -39,28 +39,21 @@ namespace NoteKeeper.Controllers.Api
         {
             User _user = null;
             var userinDB = _context.Users.ToList().SingleOrDefault(u => u.Email == user.Email);
-            Console.WriteLine("Authentication Started");
-            //bool verify_password = BC.Verify(user.Password, userinDB.Password);
-            //Console.WriteLine(verify_password);
-
-            //if(user.Email==userinDB.Email && verify_password && userinDB!=null)
-            //{
-            //    _user = userinDB;
-            //}
+            //Console.WriteLine("Authentication Started");
             if (userinDB != null)
             {
                 bool verify_password = BC.Verify(user.Password, userinDB.Password);
-                Console.WriteLine(verify_password);
+                //Console.WriteLine(verify_password);
 
                 if (verify_password)
                 {
                     _user = userinDB;
                 }
             }
-            if (_user == null)
-            {
-                Console.WriteLine("User Empty during Authentication");
-            }
+            //if (_user == null)
+            //{
+            //    //Console.WriteLine("User Empty during Authentication");
+            //}
             return _user;
         }
         private string GenerateToken(User user)
