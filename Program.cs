@@ -41,6 +41,8 @@ builder.Services.AddCors(options =>
                     .AllowAnyHeader());                   
 });
 
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -55,6 +57,9 @@ app.UseCors("AllowLocalhost3000");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSwaggerUI();
+app.UseSwagger(x => x.SerializeAsV2 = true);
 
 app.MapControllerRoute(
     name: "default",
