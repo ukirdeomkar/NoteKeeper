@@ -4,9 +4,30 @@ using NoteKeeper.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Extensions.Configuration;
+using NoteKeeper.Interfaces;
+using NoteKeeper.Controllers.Api;
+using NoteKeeper.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+
+// Add services to the container.
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<MyDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Deploy")));
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost3000",
+                builder => builder
+                    .WithOrigins("http://localhost:3000", "https://notekeeper-64361.web.app") 
+                    .AllowAnyMethod()                     
+                    .AllowAnyHeader());                   
+});
 //Adding Authentication 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
     options =>
@@ -21,27 +42,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-            NameClaimType = "sub", 
-            RoleClaimType = "role", 
+            NameClaimType = "sub",
+            RoleClaimType = "role",
 
         };
     });
-
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<MyDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowLocalhost3000",
-                builder => builder
-                    .WithOrigins("http://localhost:3000") 
-                    .AllowAnyMethod()                     
-                    .AllowAnyHeader());                   
-});
+Console.WriteLine(builder.Configuration["Jwt:Issuer"]);
 
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IUserRepository, UserRepository>();
+
+
+var config = builder.Configuration;
+
 
 var app = builder.Build();
 
@@ -57,6 +70,7 @@ app.UseCors("AllowLocalhost3000");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.UseSwaggerUI();
 app.UseSwagger(x => x.SerializeAsV2 = true);
