@@ -8,6 +8,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BC = BCrypt.Net.BCrypt;
+using Microsoft.Extensions.Configuration;
+using System.Net;
+
 
 namespace NoteKeeper.Controllers.Api
 {
@@ -19,11 +22,11 @@ namespace NoteKeeper.Controllers.Api
 
     [Route("notekeeper/[controller]")]
     [ApiController]
-    [EnableCors("AllowLocalhost3000")]
+    [EnableCors("AllowAnyCorsPolicy")]
     public class UserController : ControllerBase
     {
         private MyDBContext _context;
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         // private readonly IMapper _mapper;
         public UserController(MyDBContext my_context, IConfiguration configuration)
@@ -34,6 +37,11 @@ namespace NoteKeeper.Controllers.Api
             _configuration = configuration;
         }
 
+        [HttpOptions]
+        public HttpResponseMessage Options()
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
 
         private User AuthenticateUser(User user)
         {
@@ -58,28 +66,38 @@ namespace NoteKeeper.Controllers.Api
         }
         private string GenerateToken(User user)
         {
+            if(user == null)
+            {
+                return "";
+            }
             Console.WriteLine($"Email : {user.Email}");
             Console.WriteLine($"ID : {user.Id}");
             Console.WriteLine($"Name : {user.Name}");
+            Console.WriteLine("Hello");
             Console.WriteLine($"Pass : {user.Password}");
             var claims = new List<Claim>()
             {
                 new Claim("id",user.Id.ToString()),
-                //new Claim("name", user.Name.ToString()), 
-                //new Claim("email", user.Email.ToString()), 
-                //new Claim("password", user.Password.ToString()),
                 new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub,_configuration["Jwt:Subject"]),
                 new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Iat , DateTime.UtcNow.ToString())
+               new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Iat , DateTime.UtcNow.ToString())
 
 
             };
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            //var jwtKey = "eW91clNlY3JldEtleQ==";
+            //var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"],
                 claims, expires: DateTime.Now.AddHours(8),
                 signingCredentials: credentials
                 );
+            //var JwtIssuer = "http://localhost:5050/";
+            //var JwtAudience = "http://localhost:5050/";
+            //var token = new JwtSecurityToken(JwtIssuer, JwtAudience,
+            //    claims, expires: DateTime.Now.AddHours(8),
+            //    signingCredentials: credentials
+            //    );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
@@ -122,7 +140,7 @@ namespace NoteKeeper.Controllers.Api
         [HttpGet("{id}")]
         public User GetUserById(int id)
         {
-            var user = _context.Users.ToList().Single(u => u.Id == id);
+            var user = _context.Users.ToList().SingleOrDefault(u => u.Id == id);
 
 
             if (user == null)

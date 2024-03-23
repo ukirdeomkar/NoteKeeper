@@ -5,12 +5,13 @@ using NoteKeeper.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using System.Net;
 
 namespace NoteKeeper.Controllers.Api
 {
     [ApiController]
     [Route("/notekeeper/[controller]")]
-    [EnableCors("AllowLocalhost3000")]
+    [EnableCors("AllowAnyCorsPolicy")]
     public class NoteController : ControllerBase
     {
 
@@ -23,7 +24,11 @@ namespace NoteKeeper.Controllers.Api
             _mapper = mapper;
         }
 
-
+        [HttpOptions]
+        public HttpResponseMessage Options()
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
         [HttpGet]
         public IEnumerable<NoteDto> GetNote()
         {

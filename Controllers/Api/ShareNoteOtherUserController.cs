@@ -5,13 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NoteKeeper.Dtos;
 using NoteKeeper.Models;
+using System.Net;
 using System.Runtime.Intrinsics.X86;
 
 namespace NoteKeeper.Controllers.Api
 {
     [ApiController]
     [Route("/notekeeper/shareuser")]
-    [EnableCors("AllowLocalhost3000")]
+    [EnableCors("AllowAnyCorsPolicy")]
     public class ShareNoteOtherUserController : ControllerBase
     {
         private MyDBContext _context;
@@ -20,6 +21,11 @@ namespace NoteKeeper.Controllers.Api
         {
             _context = my_context;
             _mapper = mapper;
+        }
+        [HttpOptions]
+        public HttpResponseMessage Options()
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
         [HttpGet]
         public IEnumerable<NoteDto> GetNote()
@@ -31,7 +37,6 @@ namespace NoteKeeper.Controllers.Api
 
 
         [HttpGet("shared")]
-
         [Authorize]
         public IActionResult GetSharedNoteByUserId()
         {

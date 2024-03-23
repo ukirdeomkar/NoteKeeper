@@ -22,11 +22,13 @@ builder.Services.AddDbContext<MyDBContext>(options => options.UseSqlServer(build
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost3000",
-                builder => builder
-                    .WithOrigins("http://localhost:3000", "https://notekeeper-64361.web.app") 
-                    .AllowAnyMethod()                     
-                    .AllowAnyHeader());                   
+    options.AddPolicy("AllowAnyCorsPolicy",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
 });
 //Adding Authentication 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
@@ -66,7 +68,8 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseCors("AllowLocalhost3000");
+//app.UseCors("AllowLocalhost3000");
+app.UseCors("AllowAnyCorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();

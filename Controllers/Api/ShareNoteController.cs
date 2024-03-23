@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using NoteKeeper.Dtos;
 using NoteKeeper.Models;
+using System.Net;
 
 namespace NoteKeeper.Controllers.Api
 {
     [ApiController]
     [Route("notekeeper/[controller]")]
-    [EnableCors("AllowLocalhost3000")]
+    [EnableCors("AllowAnyCorsPolicy")]
     public class ShareNoteController : Controller
     {
         private MyDBContext _context;
@@ -21,6 +22,12 @@ namespace NoteKeeper.Controllers.Api
             _context = my_context;
             _mapper = mapper;
             _configuration = configuration;
+        }
+
+        [HttpOptions]
+        public HttpResponseMessage Options()
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
         [Authorize]
